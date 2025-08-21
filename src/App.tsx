@@ -16,7 +16,6 @@ function App() {
     selectedMetric,
     setSelectedMetric,
     addEntry,
-    updateEntry,
     deleteEntry
   } = useMockData();
 
@@ -40,7 +39,6 @@ function App() {
             selectedMetric={selectedMetric}
             onMetricChange={setSelectedMetric}
             onAddEntry={addEntry}
-            onUpdateEntry={updateEntry}
             onDeleteEntry={deleteEntry}
           />
         );

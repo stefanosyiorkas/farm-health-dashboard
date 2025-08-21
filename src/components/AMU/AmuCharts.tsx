@@ -1,16 +1,13 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AmuEntry, MetricType } from '../../types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart } from 'recharts';
+import { AmuEntry } from '../../types';
 import { AlertTriangle } from 'lucide-react';
 
 interface AmuChartsProps {
   entries: AmuEntry[];
-  selectedMetric: MetricType;
 }
 
-const COLORS = ['#16A34A', '#2563EB', '#D97706', '#DC2626', '#7C2D12', '#4B5563', '#6B7280'];
-
-export function AmuCharts({ entries, selectedMetric }: AmuChartsProps) {
+export function AmuCharts({ entries }: AmuChartsProps) {
   // Calculate class breakdown
   const classData = entries.reduce((acc, entry) => {
     const totalMg = entry.pack_concentration_mg_per_unit * entry.units_administered;
