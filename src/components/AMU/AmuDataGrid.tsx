@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Edit3, AlertTriangle, FileDown, FileUp } from 'lucide-react';
+import { Plus, Trash2, AlertTriangle, FileDown, FileUp } from 'lucide-react';
 import { AmuEntry } from '../../types';
-import { clsx } from 'clsx';
 
 interface AmuDataGridProps {
   entries: AmuEntry[];
   onAddEntry: (entry: Omit<AmuEntry, 'id'>) => void;
-  onUpdateEntry: (id: string, updates: Partial<AmuEntry>) => void;
   onDeleteEntry: (id: string) => void;
 }
 
@@ -27,8 +25,7 @@ const defaultEntry: Omit<AmuEntry, 'id'> = {
   notes: ''
 };
 
-export function AmuDataGrid({ entries, onAddEntry, onUpdateEntry, onDeleteEntry }: AmuDataGridProps) {
-  const [editingId, setEditingId] = useState<string | null>(null);
+export function AmuDataGrid({ entries, onAddEntry, onDeleteEntry }: AmuDataGridProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newEntry, setNewEntry] = useState<Omit<AmuEntry, 'id'>>(defaultEntry);
 
@@ -38,10 +35,6 @@ export function AmuDataGrid({ entries, onAddEntry, onUpdateEntry, onDeleteEntry 
       setNewEntry(defaultEntry);
       setShowAddForm(false);
     }
-  };
-
-  const handleUpdateEntry = (id: string, field: keyof AmuEntry, value: any) => {
-    onUpdateEntry(id, { [field]: value });
   };
 
   const downloadTemplate = () => {
@@ -256,12 +249,6 @@ export function AmuDataGrid({ entries, onAddEntry, onUpdateEntry, onDeleteEntry 
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => setEditingId(entry.id)}
-                        className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
                       <button
                         onClick={() => onDeleteEntry(entry.id)}
                         className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"

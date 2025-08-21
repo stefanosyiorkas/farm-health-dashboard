@@ -12,7 +12,6 @@ interface AmuCalculatorProps {
   selectedMetric: MetricType;
   onMetricChange: (metric: MetricType) => void;
   onAddEntry: (entry: Omit<AmuEntry, 'id'>) => void;
-  onUpdateEntry: (id: string, updates: Partial<AmuEntry>) => void;
   onDeleteEntry: (id: string) => void;
 }
 
@@ -22,7 +21,6 @@ export function AmuCalculator({
   selectedMetric,
   onMetricChange,
   onAddEntry,
-  onUpdateEntry,
   onDeleteEntry
 }: AmuCalculatorProps) {
   return (
@@ -89,7 +87,6 @@ export function AmuCalculator({
       <AmuDataGrid
         entries={entries}
         onAddEntry={onAddEntry}
-        onUpdateEntry={onUpdateEntry}
         onDeleteEntry={onDeleteEntry}
       />
 
@@ -99,7 +96,7 @@ export function AmuCalculator({
           <h3 className="text-xl font-semibold text-gray-900">Analysis & Visualization</h3>
           <p className="text-sm text-gray-500 mt-1">Visual breakdown of antimicrobial usage patterns</p>
         </div>
-        <AmuCharts entries={entries} selectedMetric={selectedMetric} />
+        <AmuCharts entries={entries} />
       </div>
 
       {/* Instructions */}
