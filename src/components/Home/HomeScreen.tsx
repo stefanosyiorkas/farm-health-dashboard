@@ -5,6 +5,7 @@ import { KPICard } from '../Common/KPICard';
 import { MetricToggle } from '../Common/MetricToggle';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { format } from 'date-fns';
+import { el } from 'date-fns/locale';
 
 interface HomeScreenProps {
   herdOverview: HerdOverview;
@@ -51,11 +52,11 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
             <div className="flex items-center space-x-6 text-gray-600">
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5" />
-                <span className="font-medium">{herd.adult_count} dairy cows</span>
+                <span className="font-medium">{herd.adult_count} αγελάδες γαλακτοπαραγωγής</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Calendar className="w-5 h-5" />
-                <span>Last updated: {format(new Date(), 'MMM dd, yyyy')}</span>
+                <span>Τελευταία ενημέρωση: {format(new Date(), 'dd MMMM yyyy', { locale: el })}</span>
               </div>
             </div>
           </div>
@@ -66,7 +67,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
               className="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
             >
               <Calculator className="w-5 h-5 mr-2" />
-              New AMU Session
+              Νέα Καταχώρηση AMU
             </button>
           </div>
         </div>
@@ -75,30 +76,30 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard
-          title="Total Dairy Cows"
+          title="Σύνολο Αγελάδων Γαλακτοπαραγωγής"
           value={herd.adult_count.toLocaleString()}
           icon={Users}
-          subtitle="Adult animals"
+          subtitle="Ενήλικα ζώα"
         />
         
         <KPICard
-          title="AMU (12 months)"
+          title="AMU (12-μηνο)"
           value={formatMetricValue(metrics.mg_per_pcu, 'mg_per_pcu')}
-          subtitle="mg per PCU"
+          subtitle="mg ανά PCU"
           trend={{ direction: 'down', value: '12%' }}
         />
         
         <KPICard
-          title="DDDvet Total"
+          title="Σύνολο DDDvet"
           value={formatMetricValue(metrics.dddvet, 'dddvet')}
-          subtitle="Last 12 months"
+          subtitle="Τελευταίοι 12 μήνες"
           trend={{ direction: 'up', value: '8%' }}
         />
         
         <KPICard
-          title="HP-CIA Usage"
+          title="Χρήση HP-CIA"
           value={`${metrics.hp_cia_share.toFixed(1)}%`}
-          subtitle="of total mg"
+          subtitle="επί του συνόλου mg"
           icon={AlertTriangle}
           trend={{ direction: 'down', value: '5%' }}
           isHighPriority={metrics.hp_cia_share > 10}
@@ -111,8 +112,8 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">12-Month Trend</h3>
-              <p className="text-sm text-gray-500">Antimicrobial usage over time</p>
+              <h3 className="text-lg font-semibold text-gray-900">Τάση 12-μήνου</h3>
+              <p className="text-sm text-gray-500">Χρήση αντιμικροβιακών στο χρόνο</p>
             </div>
             <MetricToggle 
               selectedMetric={selectedMetric}
@@ -127,7 +128,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
                 <XAxis 
                   dataKey="month" 
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => format(new Date(value), 'MMM')}
+                  tickFormatter={(value) => format(new Date(value), 'MMM', { locale: el })}
                 />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip 
@@ -135,7 +136,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
                     formatMetricValue(value, selectedMetric),
                     getMetricLabel(selectedMetric)
                   ]}
-                  labelFormatter={(label) => format(new Date(label), 'MMMM yyyy')}
+                  labelFormatter={(label) => format(new Date(label), 'MMMM yyyy', { locale: el })}
                 />
                 <Line 
                   type="monotone" 
@@ -153,8 +154,8 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
         {/* Class Breakdown */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Antimicrobial Classes</h3>
-            <p className="text-sm text-gray-500">Current period breakdown</p>
+            <h3 className="text-lg font-semibold text-gray-900">Κατηγορίες Αντιμικροβιακών</h3>
+            <p className="text-sm text-gray-500">Ανάλυση τρέχουσας περιόδου</p>
           </div>
           
           <div className="h-80">
@@ -170,7 +171,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
                 />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip 
-                  formatter={(value: number) => [`${value.toLocaleString()} mg`, 'Total']}
+                  formatter={(value: number) => [`${value.toLocaleString()} mg`, 'Σύνολο']}
                 />
                 <Bar 
                   dataKey="total_mg" 
@@ -187,7 +188,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Actives */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Top Active Ingredients</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Κορυφαία Δραστικά Συστατικά</h3>
           <div className="space-y-4">
             {top_actives.map((active, index) => (
               <div key={active.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
@@ -204,7 +205,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-gray-500">{active.share_percent.toFixed(1)}% of total</span>
+                    <span className="text-sm text-gray-500">{active.share_percent.toFixed(1)}% του συνόλου</span>
                   </div>
                 </div>
                 <div className="text-right">
@@ -217,7 +218,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
 
         {/* Quick Actions */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Γρήγορες Ενέργειες</h3>
           <div className="space-y-3">
             <button
               onClick={() => onNavigate('amu-calculator')}
@@ -225,7 +226,7 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
             >
               <div className="flex items-center space-x-3">
                 <Calculator className="w-5 h-5 text-green-600" />
-                <span className="font-medium text-green-800">New AMU Session</span>
+                <span className="font-medium text-green-800">Νέα Καταχώρηση AMU</span>
               </div>
               <TrendingUp className="w-4 h-4 text-green-600" />
             </button>
@@ -233,21 +234,21 @@ export function HomeScreen({ herdOverview, selectedMetric, onMetricChange, onNav
             <button className="w-full flex items-center justify-between p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center space-x-3">
                 <FileUp className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-gray-700">Import from Excel</span>
+                <span className="font-medium text-gray-700">Εισαγωγή από Excel</span>
               </div>
             </button>
             
             <button className="w-full flex items-center justify-between p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center space-x-3">
                 <Download className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-gray-700">Download Template</span>
+                <span className="font-medium text-gray-700">Λήψη Προτύπου</span>
               </div>
             </button>
             
             <button className="w-full flex items-center justify-between p-4 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center space-x-3">
                 <History className="w-5 h-5 text-gray-600" />
-                <span className="font-medium text-gray-700">View Past Sessions</span>
+                <span className="font-medium text-gray-700">Προβολή Παλαιότερων Καταχωρήσεων</span>
               </div>
             </button>
           </div>

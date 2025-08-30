@@ -58,3 +58,13 @@ export interface HerdOverview {
 }
 
 export type MetricType = 'mg_per_pcu' | 'dddvet' | 'dcdvet';
+
+export interface Medication {
+  id: number;
+  product_name: string;
+  active_name: string;
+  antimicrobial_class: string;
+  is_hp_cia: boolean;
+  pack_concentration_mg_per_unit: number;
+  default_route: string;
+}

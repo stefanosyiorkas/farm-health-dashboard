@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  frontend:
+    # This overrides the frontend service for development
+    build:
+      context: .
+      target: builder # Use the builder stage from Dockerfile which has dependencies installed
+    ports:
+      - "8081:5173" # Expose Vite's dev server port
+    command: npm run dev -- --host
+    volumes:
+      # This is the line that mounts your code. Remove this override file for production.
+      - .:/app
+      - /app/node_modules # Use container's node_modules
+
+  backend:
+    # This overrides the backend service for development
+    command: npm run dev
+    volumes:
+      # This is the line that mounts your code. Remove this override file for production.
+      - ./server:/app
+      - /app/node_modules # Use container's node_modules

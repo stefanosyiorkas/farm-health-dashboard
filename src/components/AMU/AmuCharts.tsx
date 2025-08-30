@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
+import { toPng } from 'html-to-image';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { AmuEntry, MetricType } from '../../types';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Download } from 'lucide-react';
 
 interface AmuChartsProps {
   entries: AmuEntry[];
@@ -11,45 +12,95 @@ interface AmuChartsProps {
 const COLORS = ['#16A34A', '#2563EB', '#D97706', '#DC2626', '#7C2D12', '#4B5563', '#6B7280'];
 
 export function AmuCharts({ entries, selectedMetric }: AmuChartsProps) {
-  // Calculate class breakdown
-  const classData = entries.reduce((acc, entry) => {
+  const classChartRef = useRef<HTMLDivElement>(null);
+  const activeChartRef = useRef<HTMLDivElement>(null);
+
+  const downloadChart = (ref: React.RefObject<HTMLDivElement>, filename: string) => {
+    if (ref.current === null) {
+      return;
+    }
+
+    const filter = (node: HTMLElement) => {
+      // Exclude elements with the 'exclude-from-download' class
+      return !node.classList?.contains('exclude-from-download');
+    };
+
+    toPng(ref.current, { cacheBust: true, backgroundColor: 'white', pixelRatio: 2, filter })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch((err) => {
+        console.error('oops, something went wrong!', err);
+      });
+  };
+
+  const getMetricValueForEntry = (entry: AmuEntry, metric: MetricType): number => {
+    const standardWeight = 425; // kg for dairy cattle, as used in backend
     const totalMg = entry.pack_concentration_mg_per_unit * entry.units_administered;
+
+    switch (metric) {
+      case 'dddvet':
+        return (totalMg / (entry.animal_weight_kg || standardWeight)) * (entry.duration_days || 1) * 0.1;
+      case 'dcdvet':
+        return (totalMg / (entry.animal_weight_kg || standardWeight)) * 0.15;
+      case 'mg_per_pcu':
+      default:
+        return totalMg;
+    }
+  };
+
+  const { label: metricLabel, formatter: metricFormatter } = useMemo(() => {
+    switch (selectedMetric) {
+      case 'dddvet': return { label: 'DDDvet', formatter: (val: number) => val.toFixed(1) };
+      case 'dcdvet': return { label: 'DCDvet', formatter: (val: number) => val.toFixed(1) };
+      case 'mg_per_pcu':
+      default: return { label: 'Total mg', formatter: (val: number) => val.toLocaleString() };
+    }
+  }, [selectedMetric]);
+
+  // Calculate class breakdown
+  const classData = useMemo(() => entries.reduce((acc, entry) => {
+    const metricValue = getMetricValueForEntry(entry, selectedMetric);
     const existing = acc.find(item => item.class === entry.antimicrobial_class);
     
     if (existing) {
-      existing.total_mg += totalMg;
+      existing.value += metricValue;
       if (entry.is_hp_cia) {
-        existing.hp_cia_mg += totalMg;
+        existing.hp_cia_value += metricValue;
       }
     } else {
       acc.push({
         class: entry.antimicrobial_class,
-        total_mg: totalMg,
-        hp_cia_mg: entry.is_hp_cia ? totalMg : 0,
-        is_hp_cia: entry.is_hp_cia
+        value: metricValue,
+        hp_cia_value: entry.is_hp_cia ? metricValue : 0,
       });
     }
     return acc;
-  }, [] as Array<{ class: string; total_mg: number; hp_cia_mg: number; is_hp_cia: boolean }>);
+  }, [] as Array<{ class: string; value: number; hp_cia_value: number }>), [entries, selectedMetric]);
 
   // Calculate active breakdown
-  const activeData = entries.reduce((acc, entry) => {
-    const totalMg = entry.pack_concentration_mg_per_unit * entry.units_administered;
+  const activeData = useMemo(() => entries.reduce((acc, entry) => {
+    const metricValue = getMetricValueForEntry(entry, selectedMetric);
     const existing = acc.find(item => item.active === entry.active_name);
     
     if (existing) {
-      existing.total_mg += totalMg;
+      existing.value += metricValue;
     } else {
       acc.push({
         active: entry.active_name,
-        total_mg: totalMg,
+        value: metricValue,
         is_hp_cia: entry.is_hp_cia
       });
     }
     return acc;
-  }, [] as Array<{ active: string; total_mg: number; is_hp_cia: boolean }>)
-  .sort((a, b) => b.total_mg - a.total_mg)
-  .slice(0, 10);
+  }, [] as Array<{ active: string; value: number; is_hp_cia: boolean }>)
+  .sort((a, b) => b.value - a.value)
+  .slice(0, 10), [entries, selectedMetric]);
 
   const totalMg = entries.reduce((sum, entry) => 
     sum + (entry.pack_concentration_mg_per_unit * entry.units_administered), 0
@@ -86,20 +137,29 @@ export function AmuCharts({ entries, selectedMetric }: AmuChartsProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Class Breakdown Chart */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6" ref={classChartRef}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Antimicrobial Classes</h3>
-            <p className="text-sm text-gray-500">Distribution by total mg</p>
+            <h3 className="text-lg font-semibold text-gray-900">Κατηγορίες Αντιμικροβιακών</h3>
+            <p className="text-sm text-gray-500">Κατανομή κατά {metricLabel}</p>
           </div>
-          {hpCiaPercentage > 0 && (
-            <div className="flex items-center space-x-2 bg-red-50 px-3 py-1.5 rounded-lg">
-              <AlertTriangle className="w-4 h-4 text-red-500" />
-              <span className="text-sm font-medium text-red-700">
-                {hpCiaPercentage.toFixed(1)}% HP-CIA
-              </span>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            {hpCiaPercentage > 0 && (
+              <div className="flex items-center space-x-2 bg-red-50 px-3 py-1.5 rounded-lg">
+                <AlertTriangle className="w-4 h-4 text-red-500" />
+                <span className="text-sm font-medium text-red-700">
+                  {hpCiaPercentage.toFixed(1)}% HP-CIA
+                </span>
+              </div>
+            )}
+            <button
+              onClick={() => downloadChart(classChartRef, 'antimicrobial-classes-chart.png')}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all exclude-from-download"
+              title="Download Chart"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         
         <div className="h-80">
@@ -115,29 +175,35 @@ export function AmuCharts({ entries, selectedMetric }: AmuChartsProps) {
               />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip 
-                formatter={(value: number, name: string) => [
-                  `${value.toLocaleString()} mg`,
-                  name === 'total_mg' ? 'Total' : 'HP-CIA'
-                ]}
+                formatter={(value: number, name: string) => [`${metricFormatter(value)}`, name]}
                 labelFormatter={(label) => `Class: ${label}`}
               />
-              <Bar dataKey="total_mg" fill="#16A34A" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="hp_cia_mg" fill="#DC2626" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="value" name="Total" fill="#16A34A" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="hp_cia_value" name="HP-CIA" fill="#DC2626" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Top Actives Chart */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Top Active Ingredients</h3>
-          <p className="text-sm text-gray-500">By total mg contribution</p>
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6" ref={activeChartRef}>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Κορυφαίες Δραστικές Ουσίες</h3>
+            <p className="text-sm text-gray-500">Με βάση τη συνεισφορά σε {metricLabel}</p>
+          </div>
+          <button
+            onClick={() => downloadChart(activeChartRef, 'top-active-ingredients-chart.png')}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all exclude-from-download"
+            title="Download Chart"
+          >
+            <Download className="w-4 h-4" />
+          </button>
         </div>
         
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={activeData} layout="horizontal" margin={{ top: 20, right: 30, left: 80, bottom: 5 }}>
+            <BarChart data={activeData} layout="vertical" margin={{ top: 20, right: 30, left: 80, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis type="number" tick={{ fontSize: 12 }} />
               <YAxis 
@@ -147,11 +213,11 @@ export function AmuCharts({ entries, selectedMetric }: AmuChartsProps) {
                 width={80}
               />
               <Tooltip 
-                formatter={(value: number) => [`${value.toLocaleString()} mg`, 'Total']}
+                formatter={(value: number) => [`${metricFormatter(value)}`, metricLabel]}
                 labelFormatter={(label) => `Active: ${label}`}
               />
               <Bar 
-                dataKey="total_mg" 
+                dataKey="value" 
                 fill="#2563EB" 
                 radius={[0, 4, 4, 0]}
               />

@@ -11,7 +11,7 @@ export function Header({ currentFarm }: HeaderProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2 bg-gray-50 rounded-lg px-3 py-2">
-            <span className="text-sm font-medium text-gray-700">Farm:</span>
+            <span className="text-sm font-medium text-gray-700">Φάρμα:</span>
             <button className="flex items-center space-x-1 text-sm font-semibold text-green-700 hover:text-green-800 transition-colors">
               <span>{currentFarm}</span>
               <ChevronDown className="w-4 h-4" />

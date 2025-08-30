@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Calculator, Baby, Cog as Cow, Sheet as Sheep, TestTube, Download, ChevronRight } from 'lucide-react';
+import { Home, Calculator, Baby, Cog as Cow, Sheet as Sheep, TestTube, Download, ChevronRight, Pill } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface SidebarProps {
@@ -9,32 +9,33 @@ interface SidebarProps {
 
 const navigationGroups = [
   {
-    name: 'Overview',
+    name: 'Επισκόπηση',
     items: [
-      { id: 'home', name: 'Home', icon: Home, description: 'Farm dashboard and KPIs' }
+      { id: 'home', name: 'Αρχική', icon: Home, description: 'Πίνακας ελέγχου και δείκτες' }
     ]
   },
   {
-    name: 'Antimicrobial Use',
+    name: 'Χρήση Αντιμικροβιακών',
     items: [
-      { id: 'amu-calculator', name: 'AMU Calculator', icon: Calculator, description: 'mg/PCU, DDDvet, DCDvet calculations' }
+      { id: 'amu-calculator', name: 'Υπολογιστής AMU', icon: Calculator, description: 'Υπολογισμοί mg/PCU, DDDvet, DCDvet' },
+      { id: 'medications', name: 'Φάρμακα', icon: Pill, description: 'Διαχείριση λίστας φαρμάκων' }
     ]
   },
-  {
-    name: 'Animal Health',
-    items: [
-      { id: 'calf-health', name: 'Calf Health', icon: Baby, description: 'Calf-specific tools and calculators' },
-      { id: 'cow-health', name: 'Cow Health', icon: Cow, description: 'Dairy cow health management' },
-      { id: 'sheep-health', name: 'Sheep Health', icon: Sheep, description: 'Sheep and lamb health tools' }
-    ]
-  },
-  {
-    name: 'Support Tools',
-    items: [
-      { id: 'diagnostics', name: 'Diagnostics', icon: TestTube, description: 'Sample size and test characteristics' },
-      { id: 'downloads', name: 'Downloads', icon: Download, description: 'Templates and reports' }
-    ]
-  }
+  // {
+  //   name: 'Υγεία Ζώων',
+  //   items: [
+  //     { id: 'calf-health', name: 'Υγεία Μόσχων', icon: Baby, description: 'Εργαλεία & υπολογιστές για μόσχους' },
+  //     { id: 'cow-health', name: 'Υγεία Αγελάδων', icon: Cow, description: 'Διαχείριση υγείας αγελάδων' },
+  //     { id: 'sheep-health', name: 'Υγεία Προβάτων', icon: Sheep, description: 'Εργαλεία για πρόβατα και αμνούς' }
+  //   ]
+  // },
+  // {
+  //   name: 'Εργαλεία Υποστήριξης',
+  //   items: [
+  //     { id: 'diagnostics', name: 'Διαγνωστικά', icon: TestTube, description: 'Μέγεθος δείγματος & χαρακτηριστικά τεστ' },
+  //     { id: 'downloads', name: 'Λήψεις', icon: Download, description: 'Πρότυπα και αναφορές' }
+  //   ]
+  // }
 ];
 
 export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
@@ -47,7 +48,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">FarmHealth</h1>
-            <p className="text-sm text-gray-500">Decision Support</p>
+            <p className="text-sm text-gray-500">Υποστήριξη Αποφάσεων</p>
           </div>
         </div>
       </div>

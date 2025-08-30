@@ -3,24 +3,52 @@ import { Sidebar } from './components/Layout/Sidebar';
 import { Header } from './components/Layout/Header';
 import { HomeScreen } from './components/Home/HomeScreen';
 import { AmuCalculator } from './components/AMU/AmuCalculator';
+import { MedicationsScreen } from './components/Medications/MedicationsScreen';
 import { ComingSoon } from './components/Common/ComingSoon';
-import { useMockData } from './hooks/useMockData';
-import { Baby, Cog as Cow, Sheet as Sheep, TestTube, Download } from 'lucide-react';
+import { useApiData } from './hooks/useApiData';
+import { Baby, Cog as Cow, Sheet as Sheep, TestTube, Download, Loader2, AlertTriangle } from 'lucide-react';
+import { Medication } from './types';
+
+// --- MOCK DATA (placeholder until API hook is updated) ---
+const MOCK_MEDICATIONS: Medication[] = [
+  { id: 1, product_name: 'Baytril 2.5%', active_name: 'Enrofloxacin', antimicrobial_class: 'Fluoroquinolones', is_hp_cia: true, pack_concentration_mg_per_unit: 25, default_route: 'injectable' },
+  { id: 2, product_name: 'Amoxinsol', active_name: 'Amoxicillin', antimicrobial_class: 'Penicillins', is_hp_cia: false, pack_concentration_mg_per_unit: 200, default_route: 'intramammary' },
+  { id: 3, product_name: 'Excenel RTU', active_name: 'Ceftiofur', antimicrobial_class: 'Cephalosporins', is_hp_cia: true, pack_concentration_mg_per_unit: 50, default_route: 'injectable' },
+];
 
 function App() {
   const [activeSection, setActiveSection] = useState('home');
   const {
     herdOverview,
     amuEntries,
-    calculatedMetrics,
+    loading,
+    error,
     selectedMetric,
     setSelectedMetric,
     addEntry,
     updateEntry,
     deleteEntry
-  } = useMockData();
+  } = useApiData();
 
   const renderMainContent = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="w-12 h-12 text-green-600 animate-spin" />
+        </div>
+      );
+    }
+
+    if (error || !herdOverview) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center text-red-600 bg-red-50 rounded-lg p-8">
+          <AlertTriangle className="w-16 h-16 mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Error Loading Data</h2>
+          <p className="text-red-500">{error?.message || "Could not load farm data. Please check the connection."}</p>
+        </div>
+      );
+    }
+    
     switch (activeSection) {
       case 'home':
         return (
@@ -36,8 +64,9 @@ function App() {
         return (
           <AmuCalculator
             entries={amuEntries}
-            metrics={calculatedMetrics}
+            metrics={herdOverview.metrics}
             selectedMetric={selectedMetric}
+            medications={MOCK_MEDICATIONS}
             onMetricChange={setSelectedMetric}
             onAddEntry={addEntry}
             onUpdateEntry={updateEntry}
@@ -45,6 +74,9 @@ function App() {
           />
         );
       
+      case 'medications':
+        return <MedicationsScreen />;
+
       case 'calf-health':
         return (
           <ComingSoon
@@ -140,7 +172,7 @@ function App() {
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header currentFarm={herdOverview.herd.farm_name} />
+        <Header currentFarm={herdOverview?.herd.farm_name || '...'} />
         
         <main className="flex-1 overflow-y-auto p-8">
           {renderMainContent()}

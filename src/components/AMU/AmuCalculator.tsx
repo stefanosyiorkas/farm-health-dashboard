@@ -6,10 +6,13 @@ import { MetricToggle } from '../Common/MetricToggle';
 import { AmuDataGrid } from './AmuDataGrid';
 import { AmuCharts } from './AmuCharts';
 
+import { Medication } from '../../types';
+
 interface AmuCalculatorProps {
   entries: AmuEntry[];
   metrics: AmuMetrics;
   selectedMetric: MetricType;
+  medications: Medication[]; // This is a placeholder
   onMetricChange: (metric: MetricType) => void;
   onAddEntry: (entry: Omit<AmuEntry, 'id'>) => void;
   onUpdateEntry: (id: string, updates: Partial<AmuEntry>) => void;
@@ -23,7 +26,8 @@ export function AmuCalculator({
   onMetricChange,
   onAddEntry,
   onUpdateEntry,
-  onDeleteEntry
+  onDeleteEntry,
+  medications // This is a placeholder
 }: AmuCalculatorProps) {
   return (
     <div className="space-y-8">
@@ -31,10 +35,9 @@ export function AmuCalculator({
       <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-8 border border-blue-100">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Antimicrobial Use Calculator</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Υπολογιστής Χρήσης Αντιμικροβιακών</h1>
             <p className="text-gray-600 max-w-2xl">
-              Calculate mg/PCU, DDDvet, and DCDvet metrics for your antimicrobial treatments. 
-              Track Highest-Priority Critically Important Antibiotics (HP-CIA) usage.
+              Υπολογίστε τους δείκτες mg/PCU, DDDvet και DCDvet για τις αντιμικροβιακές σας θεραπείες & Παρακολουθήστε τη χρήση των Αντιβιοτικών Κρίσιμης Σημασίας Υψίστης Προτεραιότητας (HP-CIA).
             </p>
           </div>
           <div className="flex items-center space-x-4">
@@ -45,16 +48,9 @@ export function AmuCalculator({
         </div>
       </div>
 
-      {/* Metric Toggle */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Current Session</h2>
-          <p className="text-sm text-gray-500 mt-1">Add treatments and view calculated metrics</p>
-        </div>
-        <MetricToggle 
-          selectedMetric={selectedMetric}
-          onMetricChange={onMetricChange}
-        />
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">Τρέχουσα Συνεδρία</h2>
+        <p className="text-sm text-gray-500 mt-1">Προσθέστε θεραπείες και δείτε τους υπολογισμένους δείκτες</p>
       </div>
 
       {/* KPI Cards */}
@@ -62,19 +58,19 @@ export function AmuCalculator({
         <KPICard
           title="mg per PCU"
           value={metrics.mg_per_pcu.toFixed(3)}
-          subtitle="Milligrams per Population Correction Unit"
+          subtitle="Χιλιοστόγραμμα ανά Μονάδα Διόρθωσης Πληθυσμού"
         />
         
         <KPICard
           title="DDDvet"
           value={metrics.dddvet.toFixed(1)}
-          subtitle="Defined Daily Dose for animals"
+          subtitle="Καθορισμένη Ημερήσια Δόση για ζώα"
         />
         
         <KPICard
           title="DCDvet"
           value={metrics.dcdvet.toFixed(1)}
-          subtitle="Defined Course Dose for animals"
+          subtitle="Καθορισμένη Δόση Θεραπευτικής Αγωγής για ζώα"
         />
         
         <KPICard
@@ -88,6 +84,7 @@ export function AmuCalculator({
       {/* Data Grid */}
       <AmuDataGrid
         entries={entries}
+        medications={medications}
         onAddEntry={onAddEntry}
         onUpdateEntry={onUpdateEntry}
         onDeleteEntry={onDeleteEntry}
@@ -95,36 +92,43 @@ export function AmuCalculator({
 
       {/* Charts */}
       <div>
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-900">Analysis & Visualization</h3>
-          <p className="text-sm text-gray-500 mt-1">Visual breakdown of antimicrobial usage patterns</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900">Ανάλυση & Οπτικοποίηση</h3>
+            <p className="text-sm text-gray-500 mt-1">Οπτική ανάλυση των προτύπων χρήσης αντιμικροβιακών</p>
+          </div>
+          <MetricToggle 
+            selectedMetric={selectedMetric}
+            onMetricChange={onMetricChange}
+          />
         </div>
         <AmuCharts entries={entries} selectedMetric={selectedMetric} />
       </div>
 
       {/* Instructions */}
       <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
-        <h4 className="text-lg font-semibold text-blue-900 mb-4">How to Use</h4>
+        <h4 className="text-lg font-semibold text-blue-900 mb-4">Οδηγίες</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
           <div>
-            <h5 className="font-semibold text-blue-800 mb-2">1. Add Treatments</h5>
+            <h5 className="font-semibold text-blue-800 mb-2">1. Προσθέστε Θεραπείες</h5>
             <p className="text-blue-700">
-              Enter antimicrobial treatments using the "Add Entry" button or import from Excel. 
-              Include product name, active ingredient, route, and dosing information.
+              Εισαγάγετε αντιμικροβιακές θεραπείες χρησιμοποιώντας το κουμπί "Προσθήκη Εγγραφής" 
+              ή πραγματοποιήστε εισαγωγή από Excel. 
+              Συμπεριλάβετε το όνομα προϊόντος, τη δραστική ουσία, τη διαδρομή χορήγησης και τις πληροφορίες δοσολογίας.
             </p>
           </div>
           <div>
-            <h5 className="font-semibold text-blue-800 mb-2">2. Review Calculations</h5>
+            <h5 className="font-semibold text-blue-800 mb-2">2. Ελέγξτε τους Υπολογισμούς</h5>
             <p className="text-blue-700">
-              Metrics are calculated automatically based on your herd size and treatment data. 
-              Switch between mg/PCU, DDDvet, and DCDvet views using the toggle.
+              Οι δείκτες υπολογίζονται αυτόματα με βάση το μέγεθος του κοπαδιού σας και τα δεδομένα θεραπείας. 
+              Εναλλάξτε μεταξύ προβολών mg/PCU, DDDvet και DCDvet χρησιμοποιώντας το διακόπτη.
             </p>
           </div>
           <div>
-            <h5 className="font-semibold text-blue-800 mb-2">3. Monitor HP-CIA</h5>
+            <h5 className="font-semibold text-blue-800 mb-2">3. Παρακολουθήστε τα HP-CIA</h5>
             <p className="text-blue-700">
-              Highest-Priority Critically Important Antibiotics are highlighted in red. 
-              Aim to minimize HP-CIA usage for responsible antimicrobial stewardship.
+              Τα Αντιβιοτικά Κρίσιμης Σημασίας Υψίστης Προτεραιότητας επισημαίνονται με κόκκινο χρώμα. 
+              Στόχος είναι η ελαχιστοποίηση της χρήσης HP-CIA για υπεύθυνη διαχείριση των αντιμικροβιακών.
             </p>
           </div>
         </div>
